@@ -520,13 +520,13 @@ def calculate_wait_times(df: pd.DataFrame, wait_time: int) -> pd.DataFrame:
 st.set_page_config(
     # page_title="Hello World"
     layout="wide",
-    initial_sidebar_state="collapsed",
+    # initial_sidebar_state="collapsed",
 )
 
-cols_sm = st.columns((1, 4))
-with cols_sm[0]:
-    with st.container(border=True):
-        st.page_link("🏡_home_page.py", label="Home Page 🏡", icon="👈", use_container_width=True)
+# cols_sm = st.columns((1, 4))
+# with cols_sm[0]:
+#     with st.container(border=True):
+#         st.page_link("🏡_home_page.py", label="Home Page 🏡", icon="👈", use_container_width=True)
 
 
 

@@ -1,13 +1,10 @@
 import os
-import logging
-log = logging.getLogger()
 
-
-import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import streamlit as st
 
 
 
@@ -338,79 +335,92 @@ def update_level_and_units(row, current_level, current_units):
 
 
 
-def page():
-    st.write("# AMR System Levels")
 
-    uploaded_file = st.file_uploader("Choose a file")
 
-    option = None
-    with st.expander("Calculation parameters"):
+
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="auto",
+)
+
+st.header("🚑 :grey[AMR System Levels]", divider=True)
+
+cols2 = st.columns((1, 1))
+
+option = None
+with cols2[1]:
+    # with st.expander("Calculation parameters"):
+    with st.container(border=True):
         option = st.selectbox('Resampling interval (minutes)', ["Don't resample", '2', '5', '10', '15', '30'], index=2)
-        st.text(f"option: {option}")
         if option == "Don't resample":
             option = None
 
+with cols2[0]:
+    uploaded_file = st.file_uploader("Choose a file")
+
+st.divider()
+
+
+# if uploaded_file is not None:
+# if uploaded_file := st.file_uploader("Choose a file"):
+if uploaded_file:
+    st.write(f"option: {option}")
+
+    data = load_uploaded_file(uploaded_file)
+
     st.divider()
+    st.write("### :technologist: cleaning data")
 
+    data = remove_unneeded_rows(data)
+    data = remove_unneeded_cols(data)
+    data = remove_non_AMR(data)
+    data = arrange_cols(data)
 
-    if uploaded_file is not None:
-        st.write(f"option: {option}")
+    # sort times by ascending order in 'Activity Date'
+    data = data.sort_values(by=['Activity Date'])
 
-        data = load_uploaded_file(uploaded_file)
+    # Replace various forms of missing values with np.nan (standard NaN in numpy/pandas)
+    data.replace(['nan'], np.nan, inplace=True)
 
-        st.divider()
-        st.write("### :technologist: cleaning data")
+    # If you want to replace missing values with empty strings instead
+    # data.fillna('', inplace=True)
 
-        data = remove_unneeded_rows(data)
-        data = remove_unneeded_cols(data)
-        data = remove_non_AMR(data)
-        data = arrange_cols(data)
+    # reset the index
+    data = data.reset_index(drop=True)
 
-        # sort times by ascending order in 'Activity Date'
-        data = data.sort_values(by=['Activity Date'])
+    ######################## LEVELS ########################
+    data['ALS level'] = 0
+    data['BLS level'] = 0
+    data['ALS logged on'] = [[] for _ in range(len(data))]
+    data['ALS AV'] = [[] for _ in range(len(data))]
+    data['comments'] = ''
+    data = available_units(data)
+    data = talley_available_units(data)
 
-        # Replace various forms of missing values with np.nan (standard NaN in numpy/pandas)
-        data.replace(['nan'], np.nan, inplace=True)
+    data = data[[
+        "Activity Date",
+        "Apparatus ID",
+        "Apparatus Status",
+        "Activity Code",
+        "ALS level", # NEW
+        # "BLS level", # NEW
+        "ALS AV", # NEW
+        "comments", # NEW
+        # "ALS logged on", # NEW
+        "Remarks",
+        "Call Number",
+        "Call Type"
+    ]]
 
-        # If you want to replace missing values with empty strings instead
-        # data.fillna('', inplace=True)
+    ####################### SAVE ###########################
+    fig = plot_that_shit(data, save_fig=False, resample_interval=option)
+    st.pyplot(fig)
 
-        # reset the index
-        data = data.reset_index(drop=True)
+    # if 'processed_data' not in st.session_state:
+        # st.session_state['processed_data'] = None
 
-        ######################## LEVELS ########################
-        data['ALS level'] = 0
-        data['BLS level'] = 0
-        data['ALS logged on'] = [[] for _ in range(len(data))]
-        data['ALS AV'] = [[] for _ in range(len(data))]
-        data['comments'] = ''
-        data = available_units(data)
-        data = talley_available_units(data)
+    # if st.button('Process'):
+        # st.session_state['processed_data'] = process_data(data, option)
 
-        data = data[[
-            "Activity Date",
-            "Apparatus ID",
-            "Apparatus Status",
-            "Activity Code",
-            "ALS level", # NEW
-            # "BLS level", # NEW
-            "ALS AV", # NEW
-            "comments", # NEW
-            # "ALS logged on", # NEW
-            "Remarks",
-            "Call Number",
-            "Call Type"
-        ]]
-
-        ####################### SAVE ###########################
-        fig = plot_that_shit(data, save_fig=False, resample_interval=option)
-        st.pyplot(fig)
-
-        # if 'processed_data' not in st.session_state:
-            # st.session_state['processed_data'] = None
-
-        # if st.button('Process'):
-            # st.session_state['processed_data'] = process_data(data, option)
-
-        # if st.session_state['processed_data'] is not None:
-            # st.write(st.session_state['processed_data'])
+    # if st.session_state['processed_data'] is not None:
+        # st.write(st.session_state['processed_data'])
