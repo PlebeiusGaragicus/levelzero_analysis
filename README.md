@@ -1,3 +1,16 @@
+⚠️ use `sh setup` instead of the below...
+
+```sh
+# python3 -m venv venv # FOR DEBIAN
+
+# FOR MACOS
+python3.10 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+
 # LevelZeroAnalysis
 
 http://drivendata.github.io/cookiecutter-data-science/#analysis-is-a-dag

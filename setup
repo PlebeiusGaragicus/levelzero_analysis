@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# WARN IF 'venv/' ALREADY EXISTS
+if [ -d "venv/" ]; then
+    echo "WARNING: 'venv/' already exists. Continuing will overwrite the existing directory."
+    read -p "Continue? [y/n] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+# CREATE PYTHON VIRTUAL ENVIRONMENT
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
